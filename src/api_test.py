@@ -4,7 +4,13 @@ from typing import Dict, Any
 
 def generate_test_code(api_description: str, api_name: str, base_url: str = "http://localhost:8000") -> str:
     """
-    根据 API 描述生成 pytest 测试代码
+    根据 API 描述生成增强版 pytest 测试代码
+
+    为每个API生成4个测试函数：
+    1. 正常测试
+    2. 参数缺失测试
+    3. 参数类型错误测试
+    4. 边界测试
 
     Args:
         api_description: API 的自然语言描述
@@ -15,11 +21,10 @@ def generate_test_code(api_description: str, api_name: str, base_url: str = "htt
         生成的测试代码字符串
     """
     # 解析API路径和方法
-    lines = api_description.split('\\n')
+    lines = api_description.split('\n')
     first_line = lines[0]
 
     # 提取方法和路径
-    # 格式: "API: GET /posts/{postId}"
     if 'API:' in first_line:
         api_part = first_line.split('API: ')[1]
         parts = api_part.split()
@@ -29,130 +34,314 @@ def generate_test_code(api_description: str, api_name: str, base_url: str = "htt
         method = 'GET'
         path = '/'
 
-    # 处理路径参数：将 {param} 转换为示例值
+    # 处理路径参数
     import re
     def replace_param(match):
         param_name = match.group(1)
-        # 根据参数名生成示例值
         if 'id' in param_name.lower():
-            return '1'
-        elif param_name in ['username', 'userId']:
             return '1'
         else:
             return '1'
 
-    # 替换路径参数
     path_with_params = re.sub(r'\{([^}]+)\}', replace_param, path)
+    has_path_param = bool(re.search(r'\{[^}]+\}', path))
 
-    # 根据HTTP方法生成不同的断言
+    # 生成4个测试函数
+    test_functions = []
+
+    # ===== 测试1：正常场景 =====
     if method == "GET":
-        success_assertion = '''
-    # 验证响应
-    assert response.status_code == 200
+        success_test = f'''def test_{api_name}_success():
+    """测试 {api_name} 正常场景"""
+    url = BASE_URL + "{path_with_params}"
+
+    response = requests.get(url)
+    log_request_response(f"test_{api_name}_success", url, "GET", response)
+
+    # status code断言
+    assert response.status_code == 200, "请求应成功"
+
+    # response.json()校验
+    data = response.json()
+    assert isinstance(data, (dict, list)), "响应应该是字典或列表"
+
+    # 字段存在性检查
+    if isinstance(data, dict):
+        assert "id" in data or "code" in data, "响应必须包含标识字段"
+    elif isinstance(data, list) and len(data) > 0:
+        assert len(data) > 0, "列表不应为空"'''
+
+    elif method == "POST":
+        success_test = f'''def test_{api_name}_success():
+    """测试 {api_name} 正常场景"""
+    url = BASE_URL + "{path_with_params}"
+    request_body = {{"title": "Test Title", "content": "Test Content"}}
+
+    response = requests.post(url, json=request_body)
+    log_request_response(f"test_{api_name}_success", url, "POST", response, request_body)
+
+    # status code断言
+    assert response.status_code in [200, 201], "创建应返回200或201"
+
+    # response.json()校验
+    data = response.json()
+    assert data is not None, "响应不应为空"
+
+    # 字段存在性检查
+    assert "id" in data, "创建成功必须返回id字段"
+    if response.status_code == 201:
+        assert "Location" in response.headers, "201应包含Location头"'''
+
+    elif method == "PUT":
+        success_test = f'''def test_{api_name}_success():
+    """测试 {api_name} 正常场景"""
+    url = BASE_URL + "{path_with_params}"
+    request_body = {{"title": "Updated Title", "content": "Updated Content"}}
+
+    response = requests.put(url, json=request_body)
+    log_request_response(f"test_{api_name}_success", url, "PUT", response, request_body)
+
+    # status code断言
+    assert response.status_code == 200, "更新应返回200"
+
+    # response.json()校验
+    data = response.json()
+    assert data is not None, "响应不应为空"
+
+    # 字段存在性检查
+    assert "id" in data, "响应必须包含id字段"'''
+
+    elif method == "DELETE":
+        success_test = f'''def test_{api_name}_success():
+    """测试 {api_name} 正常场景"""
+    url = BASE_URL + "{path_with_params}"
+
+    response = requests.delete(url)
+    log_request_response(f"test_{api_name}_success", url, "DELETE", response)
+
+    # status code断言
+    assert response.status_code in [200, 204], "删除应返回200或204"
+
+    # DELETE成功通常无响应体或为空
+    if response.status_code == 200:
+        data = response.json()
+        assert data is not None, "响应不应为空"'''
+
+    test_functions.append(success_test)
+
+    # ===== 测试2：参数缺失测试 =====
+    if method == "GET":
+        if has_path_param:
+            # 详情API：无法真正测试路径参数缺失（会被路由拒绝）
+            # 改为测试缺少必需查询参数
+            missing_test = f'''def test_{api_name}_missing_params():
+    """测试 {api_name} 缺少必需参数场景"""
+    # 测试空字符串参数
+    url = BASE_URL + "{path_with_params}" + "?page="
+
+    response = requests.get(url)
+    log_request_response(f"test_{api_name}_missing_params", url, "GET", response)
+
+    # status code断言
+    assert response.status_code in [200, 400, 422], "应返回有效状态码"
+
+    # response.json()校验
+    if response.status_code >= 400:
+        error = response.json()
+        assert "error" in error or "message" in error, "错误响应应包含错误信息"'''
+        else:
+            # 列表API：测试缺少分页参数
+            missing_test = f'''def test_{api_name}_missing_params():
+    """测试 {api_name} 缺少必需参数场景"""
+    url = BASE_URL + "{path_with_params}"
+
+    response = requests.get(url)
+    log_request_response(f"test_{api_name}_missing_params", url, "GET", response)
+
+    # status code断言（可能使用默认值）
+    assert response.status_code in [200, 400, 422], "应返回有效状态码"
+
+    # response.json()校验
     data = response.json()
     assert isinstance(data, (dict, list)), "响应应该是字典或列表"'''
 
     elif method in ["POST", "PUT"]:
-        success_assertion = '''
-    # 验证响应
-    assert response.status_code in [200, 201]
-    data = response.json()
-    assert data is not None, "响应不应为空"'''
-
-    elif method == "DELETE":
-        success_assertion = '''
-    # 验证响应
-    assert response.status_code in [200, 204]'''
-
-    else:
-        success_assertion = '''
-    assert response.status_code == 200'''
-
-    # 生成异常测试代码
-    if method == "GET":
-        # GET异常测试：使用不存在的资源ID
-        has_path_param = bool(re.search(r'\{[^}]+\}', path))
-        if has_path_param:
-            # 详情API异常测试：不存在的ID
-            invalid_path = re.sub(r'\{([^}]+)\}', '999999', path)
-            invalid_test = f'''
-def test_{api_name}_not_found():
-    """测试 {api_name} 资源不存在场景"""
-    url = BASE_URL + "{invalid_path}"
-
-    response = requests.get(url)
-
-    # 记录请求和响应
-    log_request_response(f"test_{api_name}_not_found", url, "GET", response)
-
-    # 验证返回404
-    assert response.status_code == 404, "不存在的资源应返回404"'''
-        else:
-            # 列表API异常测试：使用无效查询参数
-            invalid_test = f'''
-def test_{api_name}_invalid_query():
-    """测试 {api_name} 无效查询参数场景"""
-    url = BASE_URL + "{path_with_params}?invalid_param=test"
-
-    response = requests.get(url)
-
-    # 记录请求和响应
-    log_request_response(f"test_{api_name}_invalid_query", url, "GET", response)
-
-    # 验证API能处理（可能忽略无效参数或返回错误）
-    assert response.status_code in [200, 400, 422], "应返回有效状态码"'''
-
-    elif method == "POST":
-        # POST异常测试：发送空请求体
-        invalid_test = f'''
-def test_{api_name}_missing_fields():
-    """测试 {api_name} 缺少必需字段场景"""
+        missing_test = f'''def test_{api_name}_missing_params():
+    """测试 {api_name} 缺少必需参数场景"""
     url = BASE_URL + "{path_with_params}"
 
     # 发送空请求体
-    response = requests.post(url, json={{}})
+    response = requests.{method.lower()}(url, json={{}})
+    log_request_response(f"test_{api_name}_missing_params", url, "{method}", response, {{}})
 
-    # 记录请求和响应
-    log_request_response(f"test_{api_name}_missing_fields", url, "POST", response, {{}})
+    # status code断言
+    assert response.status_code in [400, 422], "缺少参数应返回400或422"
 
-    # 验证返回错误（400或422）
-    assert response.status_code in [400, 422], "缺少必需字段应返回400或422"'''
+    # response.json()校验
+    error = response.json()
+    assert isinstance(error, dict), "错误响应应该是字典"
 
-    elif method == "PUT":
-        # PUT异常测试：更新不存在的资源
-        invalid_path = re.sub(r'\{([^}]+)\}', '999999', path)
-        invalid_test = f'''
-def test_{api_name}_not_found():
-    """测试 {api_name} 更新不存在的资源"""
-    url = BASE_URL + "{invalid_path}"
+    # 字段存在性检查
+    assert "error" in error or "message" in error or "detail" in error, "错误响应应包含错误信息"'''
 
-    response = requests.put(url, json={{"title": "updated"}})
+    else:  # DELETE
+        missing_test = f'''def test_{api_name}_missing_params():
+    """测试 {api_name} 参数缺失（DELETE无body，跳过）"""
+    # DELETE请求通常无body，此测试跳过
+    pytest.skip("DELETE请求无需测试参数缺失")'''
 
-    # 记录请求和响应
-    log_request_response(f"test_{api_name}_not_found", url, "PUT", response, {{"title": "updated"}})
+    test_functions.append(missing_test)
 
-    # 验证返回404
-    assert response.status_code == 404, "更新不存在的资源应返回404"'''
+    # ===== 测试3：参数类型错误测试 =====
+    if method == "GET":
+        if has_path_param:
+            # 详情API：路径参数类型错误
+            invalid_type_path = re.sub(r'\{[^}]+\}', 'invalid', path)
+            invalid_type_test = f'''def test_{api_name}_invalid_type():
+    """测试 {api_name} 参数类型错误场景"""
+    url = BASE_URL + "{invalid_type_path}"
 
-    elif method == "DELETE":
-        # DELETE异常测试：删除不存在的资源
-        invalid_path = re.sub(r'\{([^}]+)\}', '999999', path)
-        invalid_test = f'''
-def test_{api_name}_not_found():
-    """测试 {api_name} 删除不存在的资源"""
-    url = BASE_URL + "{invalid_path}"
+    response = requests.get(url)
+    log_request_response(f"test_{api_name}_invalid_type", url, "GET", response)
+
+    # status code断言
+    assert response.status_code in [400, 404, 422], "类型错误应返回400/404/422"
+
+    # response.json()校验
+    if response.status_code >= 400:
+        error = response.json()
+        assert "error" in error or "message" in error, "错误响应应包含错误信息"'''
+        else:
+            # 列表API：查询参数类型错误
+            invalid_type_test = f'''def test_{api_name}_invalid_type():
+    """测试 {api_name} 参数类型错误场景"""
+    url = BASE_URL + "{path_with_params}?page=abc"
+
+    response = requests.get(url)
+    log_request_response(f"test_{api_name}_invalid_type", url, "GET", response)
+
+    # status code断言
+    assert response.status_code in [200, 400, 422], "应返回有效状态码"
+
+    # response.json()校验
+    data = response.json()
+    assert isinstance(data, (dict, list)), "响应应该是字典或列表"'''
+
+    elif method in ["POST", "PUT"]:
+        invalid_type_test = f'''def test_{api_name}_invalid_type():
+    """测试 {api_name} 参数类型错误场景"""
+    url = BASE_URL + "{path_with_params}"
+
+    # 发送错误类型的参数（数字字段传字符串）
+    response = requests.{method.lower()}(url, json={{"id": "not_a_number"}})
+    log_request_response(f"test_{api_name}_invalid_type", url, "{method}", response, {{"id": "not_a_number"}})
+
+    # status code断言
+    assert response.status_code in [400, 422], "类型错误应返回400或422"
+
+    # response.json()校验
+    error = response.json()
+    assert isinstance(error, dict), "错误响应应该是字典"
+
+    # 字段存在性检查
+    assert "error" in error or "message" in error, "错误响应应包含错误信息"'''
+
+    else:  # DELETE
+        invalid_type_test = f'''def test_{api_name}_invalid_type():
+    """测试 {api_name} 参数类型错误（DELETE路径参数）"""
+    # 使用无效ID类型
+    url = BASE_URL + "{re.sub(r'\{[^}]+\}', 'invalid', path_with_params)}"
 
     response = requests.delete(url)
+    log_request_response(f"test_{api_name}_invalid_type", url, "DELETE", response)
 
-    # 记录请求和响应
-    log_request_response(f"test_{api_name}_not_found", url, "DELETE", response)
+    # status code断言
+    assert response.status_code in [400, 404], "无效类型应返回400或404"
 
-    # 验证返回404
-    assert response.status_code == 404, "删除不存在的资源应返回404"'''
+    # response.json()校验
+    if response.status_code >= 400:
+        error = response.json()
+        assert isinstance(error, dict), "错误响应应该是字典"'''
 
+    test_functions.append(invalid_type_test)
+
+    # ===== 测试4：边界测试 =====
+    if method == "GET":
+        boundary_test = f'''def test_{api_name}_boundary():
+    """测试 {api_name} 边界值场景"""
+    # 测试极大的分页值
+    url = BASE_URL + "{path_with_params}?page=999999"
+
+    response = requests.get(url)
+    log_request_response(f"test_{api_name}_boundary", url, "GET", response)
+
+    # status code断言
+    assert response.status_code in [200, 400, 422], "应返回有效状态码"
+
+    # response.json()校验
+    data = response.json()
+    assert isinstance(data, (dict, list)), "响应应该是字典或列表"'''
+
+    elif method == "POST":
+        boundary_test = f'''def test_{api_name}_boundary():
+    """测试 {api_name} 边界值场景"""
+    url = BASE_URL + "{path_with_params}"
+
+    # 测试空字符串
+    response = requests.post(url, json={{"title": "", "content": ""}})
+    log_request_response(f"test_{api_name}_boundary", url, "POST", response, {{"title": "", "content": ""}})
+
+    # status code断言（可能接受空值或拒绝）
+    assert response.status_code in [200, 201, 400, 422], "应返回有效状态码"
+
+    # response.json()校验
+    if response.status_code >= 400:
+        error = response.json()
+        assert "error" in error or "message" in error, "错误响应应包含错误信息"
     else:
-        invalid_test = ''
+        data = response.json()
+        assert "id" in data, "响应应包含id字段"'''
 
+    elif method == "PUT":
+        boundary_test = f'''def test_{api_name}_boundary():
+    """测试 {api_name} 边界值场景"""
+    # 测试更新不存在的资源
+    url = BASE_URL + "{re.sub(r'\{[^}]+\}', '999999', path_with_params)}"
+
+    response = requests.put(url, json={{"title": "Updated"}})
+    log_request_response(f"test_{api_name}_boundary", url, "PUT", response, {{"title": "Updated"}})
+
+    # status code断言
+    assert response.status_code == 404, "更新不存在的资源应返回404"
+
+    # response.json()校验
+    error = response.json()
+    assert isinstance(error, dict), "错误响应应该是字典"
+
+    # 字段存在性检查
+    assert "error" in error or "message" in error, "错误响应应包含错误信息"'''
+
+    else:  # DELETE
+        boundary_test = f'''def test_{api_name}_boundary():
+    """测试 {api_name} 边界值场景"""
+    # 测试删除不存在的资源
+    url = BASE_URL + "{re.sub(r'\{[^}]+\}', '999999', path_with_params)}"
+
+    response = requests.delete(url)
+    log_request_response(f"test_{api_name}_boundary", url, "DELETE", response)
+
+    # status code断言
+    assert response.status_code == 404, "删除不存在的资源应返回404"
+
+    # response.json()校验
+    if response.text:
+        error = response.json()
+        assert isinstance(error, dict), "错误响应应该是字典"
+        assert "error" in error or "message" in error, "错误响应应包含错误信息"'''
+
+    test_functions.append(boundary_test)
+
+    # 组装完整的测试代码
     test_code = f'''import requests
 import pytest
 import json
@@ -179,39 +368,17 @@ def log_request_response(test_name, url, method, response, request_body=None):
         "response": {{
             "status_code": response.status_code,
             "headers": dict(response.headers),
-            "body": response.text[:1000] if response.text else "",  # 限制响应体大小
+            "body": response.text[:1000] if response.text else "",
             "response_time_ms": response.elapsed.total_seconds() * 1000
         }}
     }}
 
-    # 追加到日志文件
     os.makedirs(os.path.dirname(LOG_FILE), exist_ok=True)
     with open(LOG_FILE, 'a', encoding='utf-8') as f:
         f.write(json.dumps(log_entry, ensure_ascii=False) + '\\n')
 
 
-def test_{api_name}_success():
-    """测试 {api_name} 正常场景"""
-    url = BASE_URL + "{path_with_params}"
-    method = "{method}"
-
-    if method == "GET":
-        response = requests.get(url)
-    elif method == "POST":
-        response = requests.post(url, json={{"key": "value"}})
-    elif method == "PUT":
-        response = requests.put(url, json={{"key": "value"}})
-    elif method == "DELETE":
-        response = requests.delete(url)
-    else:
-        pytest.skip(f"Unsupported method: {{method}}")
-
-    # 记录请求和响应
-    log_request_response(f"test_{api_name}_success", url, method, response)
-
-{success_assertion}
-
-{invalid_test}
+{chr(10).join(test_functions)}
 '''
 
     return test_code
@@ -318,7 +485,7 @@ def generate_tests_for_apis(apis: list, base_url: str = "http://localhost:8000",
         resource_name = test_name.replace('test_', '').replace(f"_{api['method'].lower()}_", '')
 
         # 生成测试代码
-        api_description = f"API: {api['method']} {api['path']}\\n描述: {api['summary']}"
+        api_description = f"API: {api['method']} {api['path']}\n描述: {api['summary']}"
         test_code = generate_test_code(api_description, resource_name, base_url)
 
         # 保存测试文件
