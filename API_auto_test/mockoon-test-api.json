@@ -1,0 +1,995 @@
+{
+  "uuid": "163c19df-97e3-4321-9727-7f6296b34ce5",
+  "lastMigration": 33,
+  "name": "HTTP测试API服务器",
+  "endpointPrefix": "/api",
+  "latency": 0,
+  "port": 3000,
+  "hostname": "localhost",
+  "folders": [
+    {
+      "uuid": "08a0992a-d7f4-41b2-8877-514768b1258b",
+      "name": "1-基础CRUD",
+      "children": []
+    },
+    {
+      "uuid": "f48c34a5-448f-4d1b-afb4-b00a0ebf37ab",
+      "name": "2-认证授权",
+      "children": []
+    },
+    {
+      "uuid": "4c659606-b04e-4a5f-af78-5b94792c6a4b",
+      "name": "3-错误处理",
+      "children": []
+    },
+    {
+      "uuid": "65f3a32f-2a35-41d0-8599-66f1009f6176",
+      "name": "4-重定向",
+      "children": []
+    },
+    {
+      "uuid": "77ed7b79-0bb7-4097-a51d-74d1d14fe0e4",
+      "name": "5-其他测试",
+      "children": []
+    }
+  ],
+  "routes": [
+    {
+      "uuid": "57462ac1-6189-40bf-8c51-19aecad9d1db",
+      "type": "http",
+      "documentation": "获取文章列表",
+      "method": "get",
+      "endpoint": "/posts",
+      "responses": [
+        {
+          "uuid": "9c1ce395-b622-48ff-9514-acd6a3df331c",
+          "body": "[\n  {\"id\": 1, \"title\": \"Test Post 1\", \"body\": \"Body 1\", \"userId\": 1},\n  {\"id\": 2, \"title\": \"Test Post 2\", \"body\": \"Body 2\", \"userId\": 1},\n  {\"id\": 3, \"title\": \"Test Post 3\", \"body\": \"Body 3\", \"userId\": 2}\n]",
+          "latency": 50,
+          "statusCode": 200,
+          "label": "成功响应",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "public, max-age=3600"
+            },
+            {
+              "key": "ETag",
+              "value": "\"v1-1234567890\""
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "d029c1ee-0116-4fe2-be4e-e6dfab7e9b8f",
+      "type": "http",
+      "documentation": "获取文章详情",
+      "method": "get",
+      "endpoint": "/posts/:id",
+      "responses": [
+        {
+          "uuid": "709ade58-ef62-4208-bfc5-402fae5468dc",
+          "body": "{\n  \"id\": {{pathParam 'id'}},\n  \"title\": \"Test Post {{pathParam 'id'}}\",\n  \"body\": \"This is post {{pathParam 'id'}}\",\n  \"userId\": 1,\n  \"createdAt\": \"2026-04-24T10:30:00Z\"\n}",
+          "latency": 50,
+          "statusCode": 200,
+          "label": "成功响应",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "path",
+              "modifier": "id",
+              "operator": "equals",
+              "value": "1000",
+              "invert": false
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "6f0a69f5-a985-4b97-8bb8-faf69344e8b5",
+          "body": "{\n  \"error\": {\n    \"code\": \"NOT_FOUND\",\n    \"message\": \"资源不存在\",\n    \"timestamp\": \"2026-04-26T10:30:00Z\",\n    \"path\": \"/api/posts/{{pathParam 'id'}}\"\n  }\n}",
+          "latency": 0,
+          "statusCode": 404,
+          "label": "资源不存在",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "path",
+              "modifier": "id",
+              "operator": "equals",
+              "value": "1000",
+              "invert": false
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "f3cfb164-3fd2-49d8-bae8-d32be296cbcf",
+      "type": "http",
+      "documentation": "创建文章",
+      "method": "post",
+      "endpoint": "/posts",
+      "responses": [
+        {
+          "uuid": "0505743c-eaac-4d8e-a63c-a3ae18a9f7d5",
+          "body": "{\n  \"id\": 101,\n  \"title\": \"{{body 'title'}}\",\n  \"body\": \"{{body 'body'}}\",\n  \"userId\": {{body 'userId'}},\n  \"createdAt\": \"2026-04-26T10:30:00Z\"\n}",
+          "latency": 100,
+          "statusCode": 201,
+          "label": "创建成功",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Location",
+              "value": "/api/posts/101"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "body",
+              "modifier": "title",
+              "operator": "equals",
+              "value": "",
+              "invert": false
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "dc26d63f-62cb-4044-8fb8-716e68bcb94d",
+          "body": "{\n  \"error\": {\n    \"code\": \"VALIDATION_ERROR\",\n    \"message\": \"输入值有误\",\n    \"details\": [\n      {\"field\": \"title\", \"message\": \"标题是必填项\"}\n    ],\n    \"timestamp\": \"2026-04-26T10:30:00Z\",\n    \"path\": \"/api/posts\"\n  }\n}",
+          "latency": 0,
+          "statusCode": 422,
+          "label": "验证失败-缺少title",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "body",
+              "modifier": "title",
+              "operator": "equals",
+              "value": "",
+              "invert": false
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "6d64b2a6-7e0e-4e1a-9234-df8b12dc6f8a",
+      "type": "http",
+      "documentation": "更新文章（全量）",
+      "method": "put",
+      "endpoint": "/posts/:id",
+      "responses": [
+        {
+          "uuid": "edf09689-f76c-41a1-a4d3-708c8597bc07",
+          "body": "{\n  \"id\": {{pathParam 'id'}},\n  \"title\": \"{{body 'title'}}\",\n  \"body\": \"{{body 'body'}}\",\n  \"userId\": 1,\n  \"updatedAt\": \"2026-04-26T10:30:00Z\"\n}",
+          "latency": 100,
+          "statusCode": 200,
+          "label": "更新成功",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "path",
+              "modifier": "id",
+              "operator": "equals",
+              "value": "1000",
+              "invert": false
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "d53be65e-905f-4e44-9c25-4be0bac7efa1",
+          "body": "{\n  \"error\": {\n    \"code\": \"NOT_FOUND\",\n    \"message\": \"文章不存在\"\n  }\n}",
+          "latency": 0,
+          "statusCode": 404,
+          "label": "资源不存在",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "path",
+              "modifier": "id",
+              "operator": "equals",
+              "value": "1000",
+              "invert": false
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "ebdcf0db-da25-4d08-a833-057f1ba51fd7",
+      "type": "http",
+      "documentation": "删除文章",
+      "method": "delete",
+      "endpoint": "/posts/:id",
+      "responses": [
+        {
+          "uuid": "aaeb77dd-d6e4-43a5-887d-83acfa16d5b9",
+          "body": "",
+          "latency": 100,
+          "statusCode": 204,
+          "label": "删除成功",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "path",
+              "modifier": "id",
+              "operator": "equals",
+              "value": "1000",
+              "invert": false
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "5aa2988e-615e-4edf-903d-6219044ea93d",
+          "body": "{\n  \"error\": {\n    \"code\": \"NOT_FOUND\",\n    \"message\": \"文章不存在\"\n  }\n}",
+          "latency": 0,
+          "statusCode": 404,
+          "label": "资源不存在",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "path",
+              "modifier": "id",
+              "operator": "equals",
+              "value": "1000",
+              "invert": false
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "b6ec0507-867e-4c1a-a0fc-2442ca811088",
+      "type": "http",
+      "documentation": "需要认证的端点",
+      "method": "get",
+      "endpoint": "/protected",
+      "responses": [
+        {
+          "uuid": "63f535a0-55ac-470e-813a-e1699bed20af",
+          "body": "{\n  \"message\": \"Protected resource accessed\",\n  \"user\": {\n    \"id\": 1,\n    \"name\": \"Test User\",\n    \"email\": \"user@example.com\"\n  }\n}",
+          "latency": 50,
+          "statusCode": 200,
+          "label": "认证成功",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "authorization",
+              "operator": "equals",
+              "value": "Bearer valid-token",
+              "invert": false
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "e77cda29-e6b0-4c77-8ce0-a9f3d3e0b2ab",
+          "body": "{\n  \"error\": {\n    \"code\": \"UNAUTHORIZED\",\n    \"message\": \"认证失败，token无效\",\n    \"timestamp\": \"2026-04-26T10:30:00Z\"\n  }\n}",
+          "latency": 0,
+          "statusCode": 401,
+          "label": "无效token",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "WWW-Authenticate",
+              "value": "Bearer"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "authorization",
+              "operator": "equals",
+              "value": "Bearer valid-token",
+              "invert": false
+            },
+            {
+              "target": "header",
+              "modifier": "authorization",
+              "operator": "equals",
+              "value": "",
+              "invert": false
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "78a85aa0-4d98-4758-be01-3c6f67421066",
+          "body": "{\n  \"error\": {\n    \"code\": \"UNAUTHORIZED\",\n    \"message\": \"缺少认证token\",\n    \"timestamp\": \"2026-04-26T10:30:00Z\"\n  }\n}",
+          "latency": 0,
+          "statusCode": 401,
+          "label": "缺少token",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "WWW-Authenticate",
+              "value": "Bearer"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "authorization",
+              "operator": "equals",
+              "value": "",
+              "invert": false
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "ab57b5bf-aecf-4184-927d-d9f5183bfa38",
+      "type": "http",
+      "documentation": "需要管理员权限的端点",
+      "method": "get",
+      "endpoint": "/admin/users",
+      "responses": [
+        {
+          "uuid": "172c12f4-15be-4d84-9c3d-5d035d8b1f80",
+          "body": "[\n  {\"id\": 1, \"name\": \"Admin\", \"role\": \"admin\"},\n  {\"id\": 2, \"name\": \"User1\", \"role\": \"user\"}\n]",
+          "latency": 50,
+          "statusCode": 200,
+          "label": "管理员访问成功",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "authorization",
+              "operator": "equals",
+              "value": "Bearer admin-token",
+              "invert": false
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "f8a62a48-538d-443f-b51f-30ac88e0448b",
+          "body": "{\n  \"error\": {\n    \"code\": \"FORBIDDEN\",\n    \"message\": \"权限不足，需要管理员角色\",\n    \"timestamp\": \"2026-04-26T10:30:00Z\"\n  }\n}",
+          "latency": 0,
+          "statusCode": 403,
+          "label": "权限不足",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "authorization",
+              "operator": "equals",
+              "value": "Bearer valid-token",
+              "invert": false
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "7a52798d-15b5-499c-9d10-5be7a1ae523a",
+          "body": "{\n  \"error\": {\n    \"code\": \"UNAUTHORIZED\",\n    \"message\": \"需要认证\"\n  }\n}",
+          "latency": 0,
+          "statusCode": 401,
+          "label": "未认证",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "535b4a99-95f3-4d6e-8250-f59ac75ffc50",
+      "type": "http",
+      "documentation": "301永久重定向",
+      "method": "get",
+      "endpoint": "/old-url",
+      "responses": [
+        {
+          "uuid": "4a390d13-fda9-47de-8ea4-bfa981129ed0",
+          "body": "",
+          "latency": 0,
+          "statusCode": 301,
+          "label": "永久重定向",
+          "headers": [
+            {
+              "key": "Location",
+              "value": "/api/new-url"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "5c107d3e-c2dd-44da-a24f-d82d34750c2f",
+      "type": "http",
+      "documentation": "302临时重定向",
+      "method": "get",
+      "endpoint": "/temp-redirect",
+      "responses": [
+        {
+          "uuid": "2872f891-20e7-4bd9-8b74-aaa82f0dc4d7",
+          "body": "",
+          "latency": 0,
+          "statusCode": 302,
+          "label": "临时重定向",
+          "headers": [
+            {
+              "key": "Location",
+              "value": "/api/target"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "44ff42c4-11c2-48a7-a534-e85a982ad2fe",
+      "type": "http",
+      "documentation": "500服务器错误",
+      "method": "get",
+      "endpoint": "/error",
+      "responses": [
+        {
+          "uuid": "cfcebaed-ec01-4ccd-b5a9-192e13af8e00",
+          "body": "{\n  \"error\": {\n    \"code\": \"INTERNAL_SERVER_ERROR\",\n    \"message\": \"服务器内部错误\",\n    \"timestamp\": \"2026-04-26T10:30:00Z\"\n  }\n}",
+          "latency": 0,
+          "statusCode": 500,
+          "label": "服务器错误",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "5fb754b6-694a-48b9-ac02-c1a80860133b",
+      "type": "http",
+      "documentation": "503服务不可用",
+      "method": "get",
+      "endpoint": "/maintenance",
+      "responses": [
+        {
+          "uuid": "e1a97e1a-9bbb-4bf4-be5a-e533ae260cc1",
+          "body": "{\n  \"error\": {\n    \"code\": \"SERVICE_UNAVAILABLE\",\n    \"message\": \"系统维护中，请稍后再试\",\n    \"timestamp\": \"2026-04-26T10:30:00Z\"\n  }\n}",
+          "latency": 0,
+          "statusCode": 503,
+          "label": "服务不可用",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Retry-After",
+              "value": "3600"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "347264d6-1c69-4577-8bc5-fa7238c58d46",
+      "type": "http",
+      "documentation": "慢速API（性能测试）",
+      "method": "get",
+      "endpoint": "/slow",
+      "responses": [
+        {
+          "uuid": "88fbc727-f011-4462-b9c1-ef1cdb595b89",
+          "body": "{\n  \"message\": \"This is a slow API\",\n  \"delay\": \"200ms\"\n}",
+          "latency": 200,
+          "statusCode": 200,
+          "label": "慢速响应",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "5d960784-0023-4cba-846b-16699c2e31d1",
+      "type": "http",
+      "documentation": "CORS预检请求",
+      "method": "options",
+      "endpoint": "/posts",
+      "responses": [
+        {
+          "uuid": "4eaa5c32-4833-46ab-9da7-cb26f5c29969",
+          "body": "",
+          "latency": 0,
+          "statusCode": 204,
+          "label": "CORS预检",
+          "headers": [
+            {
+              "key": "Access-Control-Allow-Origin",
+              "value": "https://example.com"
+            },
+            {
+              "key": "Access-Control-Allow-Methods",
+              "value": "GET, POST, PUT, DELETE, OPTIONS"
+            },
+            {
+              "key": "Access-Control-Allow-Headers",
+              "value": "Content-Type, Authorization"
+            },
+            {
+              "key": "Access-Control-Max-Age",
+              "value": "86400"
+            },
+            {
+              "key": "Access-Control-Allow-Credentials",
+              "value": "true"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "a6704089-6093-4560-866e-03e872ab65d6",
+      "type": "http",
+      "documentation": "获取用户列表",
+      "method": "get",
+      "endpoint": "/users",
+      "responses": [
+        {
+          "uuid": "5ee7c29b-29fa-48fb-b1e9-46ab86428ec2",
+          "body": "[\n  {\"id\": 1, \"name\": \"User 1\", \"email\": \"user1@example.com\"},\n  {\"id\": 2, \"name\": \"User 2\", \"email\": \"user2@example.com\"}\n]",
+          "latency": 50,
+          "statusCode": 200,
+          "label": "成功响应",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "folder",
+      "uuid": "08a0992a-d7f4-41b2-8877-514768b1258b"
+    },
+    {
+      "type": "folder",
+      "uuid": "f48c34a5-448f-4d1b-afb4-b00a0ebf37ab"
+    },
+    {
+      "type": "folder",
+      "uuid": "4c659606-b04e-4a5f-af78-5b94792c6a4b"
+    },
+    {
+      "type": "folder",
+      "uuid": "65f3a32f-2a35-41d0-8599-66f1009f6176"
+    },
+    {
+      "type": "folder",
+      "uuid": "77ed7b79-0bb7-4097-a51d-74d1d14fe0e4"
+    },
+    {
+      "type": "route",
+      "uuid": "57462ac1-6189-40bf-8c51-19aecad9d1db"
+    },
+    {
+      "type": "route",
+      "uuid": "d029c1ee-0116-4fe2-be4e-e6dfab7e9b8f"
+    },
+    {
+      "type": "route",
+      "uuid": "f3cfb164-3fd2-49d8-bae8-d32be296cbcf"
+    },
+    {
+      "type": "route",
+      "uuid": "6d64b2a6-7e0e-4e1a-9234-df8b12dc6f8a"
+    },
+    {
+      "type": "route",
+      "uuid": "ebdcf0db-da25-4d08-a833-057f1ba51fd7"
+    },
+    {
+      "type": "route",
+      "uuid": "b6ec0507-867e-4c1a-a0fc-2442ca811088"
+    },
+    {
+      "type": "route",
+      "uuid": "ab57b5bf-aecf-4184-927d-d9f5183bfa38"
+    },
+    {
+      "type": "route",
+      "uuid": "535b4a99-95f3-4d6e-8250-f59ac75ffc50"
+    },
+    {
+      "type": "route",
+      "uuid": "5c107d3e-c2dd-44da-a24f-d82d34750c2f"
+    },
+    {
+      "type": "route",
+      "uuid": "44ff42c4-11c2-48a7-a534-e85a982ad2fe"
+    },
+    {
+      "type": "route",
+      "uuid": "5fb754b6-694a-48b9-ac02-c1a80860133b"
+    },
+    {
+      "type": "route",
+      "uuid": "347264d6-1c69-4577-8bc5-fa7238c58d46"
+    },
+    {
+      "type": "route",
+      "uuid": "5d960784-0023-4cba-846b-16699c2e31d1"
+    },
+    {
+      "type": "route",
+      "uuid": "a6704089-6093-4560-866e-03e872ab65d6"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "X-Powered-By",
+      "value": "Mockoon-Test-API"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

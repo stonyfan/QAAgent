@@ -1,0 +1,387 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "JSONPlaceholder API",
+    "version": "1.0.0",
+    "description": "JSONPlaceholder - 免费的伪REST API，用于测试和原型设计"
+  },
+  "servers": [
+    {
+      "url": "https://jsonplaceholder.typicode.com",
+      "description": "生产服务器"
+    }
+  ],
+  "paths": {
+    "/posts": {
+      "get": {
+        "summary": "获取所有文章",
+        "description": "获取文章列表",
+        "operationId": "getPosts",
+        "responses": {
+          "200": {
+            "description": "成功获取文章列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "userId": {"type": "integer"},
+                      "id": {"type": "integer"},
+                      "title": {"type": "string"},
+                      "body": {"type": "string"}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "创建新文章",
+        "description": "创建一篇新文章",
+        "operationId": "createPost",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["title", "body", "userId"],
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "description": "文章标题",
+                    "example": "测试文章"
+                  },
+                  "body": {
+                    "type": "string",
+                    "description": "文章内容",
+                    "example": "这是一篇测试文章的内容"
+                  },
+                  "userId": {
+                    "type": "integer",
+                    "description": "用户ID",
+                    "example": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "文章创建成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "title": {"type": "string"},
+                    "body": {"type": "string"},
+                    "userId": {"type": "integer"},
+                    "id": {"type": "integer"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/posts/{postId}": {
+      "get": {
+        "summary": "获取单篇文章",
+        "description": "根据ID获取文章详情",
+        "operationId": "getPost",
+        "parameters": [
+          {
+            "name": "postId",
+            "in": "path",
+            "required": true,
+            "description": "文章ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取文章",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "userId": {"type": "integer"},
+                    "id": {"type": "integer"},
+                    "title": {"type": "string"},
+                    "body": {"type": "string"}
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "文章不存在"
+          }
+        }
+      },
+      "put": {
+        "summary": "更新文章",
+        "description": "更新指定ID的文章",
+        "operationId": "updatePost",
+        "parameters": [
+          {
+            "name": "postId",
+            "in": "path",
+            "required": true,
+            "description": "文章ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "example": "更新的标题"
+                  },
+                  "body": {
+                    "type": "string",
+                    "example": "更新的内容"
+                  },
+                  "userId": {
+                    "type": "integer",
+                    "example": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "文章更新成功"
+          }
+        }
+      },
+      "delete": {
+        "summary": "删除文章",
+        "description": "删除指定ID的文章",
+        "operationId": "deletePost",
+        "parameters": [
+          {
+            "name": "postId",
+            "in": "path",
+            "required": true,
+            "description": "文章ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "文章删除成功"
+          },
+          "404": {
+            "description": "文章不存在"
+          }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "summary": "获取所有用户",
+        "description": "获取用户列表",
+        "operationId": "getUsers",
+        "responses": {
+          "200": {
+            "description": "成功获取用户列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {"type": "integer"},
+                      "name": {"type": "string"},
+                      "username": {"type": "string"},
+                      "email": {"type": "string"},
+                      "phone": {"type": "string"},
+                      "website": {"type": "string"}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "创建新用户",
+        "description": "创建一个新用户",
+        "operationId": "createUser",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "username", "email"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "张三"
+                  },
+                  "username": {
+                    "type": "string",
+                    "example": "zhangsan"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "zhangsan@example.com"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "用户创建成功"
+          }
+        }
+      }
+    },
+    "/users/{userId}": {
+      "get": {
+        "summary": "获取单个用户",
+        "description": "根据ID获取用户详情",
+        "operationId": "getUser",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "description": "用户ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取用户",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {"type": "integer"},
+                    "name": {"type": "string"},
+                    "username": {"type": "string"},
+                    "email": {"type": "string"},
+                    "phone": {"type": "string"},
+                    "website": {"type": "string"},
+                    "company": {
+                      "type": "object",
+                      "properties": {
+                        "name": {"type": "string"},
+                        "catchPhrase": {"type": "string"},
+                        "bs": {"type": "string"}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "用户不存在"
+          }
+        }
+      }
+    },
+    "/comments": {
+      "get": {
+        "summary": "获取所有评论",
+        "description": "获取评论列表",
+        "operationId": "getComments",
+        "responses": {
+          "200": {
+            "description": "成功获取评论列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "postId": {"type": "integer"},
+                      "id": {"type": "integer"},
+                      "name": {"type": "string"},
+                      "email": {"type": "string"},
+                      "body": {"type": "string"}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/posts/{postId}/comments": {
+      "get": {
+        "summary": "获取文章的评论",
+        "description": "获取指定文章的所有评论",
+        "operationId": "getPostComments",
+        "parameters": [
+          {
+            "name": "postId",
+            "in": "path",
+            "required": true,
+            "description": "文章ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取评论列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "postId": {"type": "integer"},
+                      "id": {"type": "integer"},
+                      "name": {"type": "string"},
+                      "email": {"type": "string"},
+                      "body": {"type": "string"}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

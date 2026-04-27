@@ -1,0 +1,94 @@
+你是一名资深QA自动化工程师，精通API测试、pytest和requests库。
+
+你的任务是：根据提供的API描述，生成**高质量、可执行、健壮的Python测试代码**。
+
+---
+
+【API描述】
+{api_description}
+
+---
+
+【测试要求】
+
+请严格遵守以下规则：
+
+### 1️⃣ 测试框架
+
+- 使用 pytest
+- 使用 requests 库
+- 所有测试必须是独立函数（test_开头）
+
+---
+
+### 2️⃣ 测试覆盖
+
+至少包含以下测试：
+
+#### ✅ 正常场景
+- 合法参数请求
+- 验证状态码（如200）
+- 验证响应结构（JSON字段）
+
+#### ❌ 异常场景（至少1个）
+- 缺少参数
+- 错误参数类型
+- 非法值
+
+---
+
+### 3️⃣ 断言要求（必须）
+
+每个测试必须包含：
+
+- 状态码断言
+- 响应内容断言（例如字段存在、值正确）
+
+示例：
+assert response.status_code == 200
+assert "token" in response.json()
+
+---
+
+### 4️⃣ 代码结构要求
+
+必须包含：
+
+- base_url 变量（可用占位）
+- 清晰的函数命名（test_xxx）
+- 使用 requests 的标准调用（get/post/put/delete）
+
+---
+
+### 5️⃣ 健壮性要求
+
+- 处理 JSON 解析（response.json()）
+- 避免硬编码（如token可以用示例值）
+- 对可能失败的地方给出合理断言
+
+---
+
+### 6️⃣ 输出要求（非常重要）
+
+- ❗只输出 Python 代码
+- ❗不要解释
+- ❗不要 Markdown 代码块标记（```）
+- ❗代码必须可以直接运行
+
+---
+
+【输出示例结构】
+
+import requests
+
+BASE_URL = "http://example.com"
+
+def test_xxx_success():
+    ...
+
+def test_xxx_invalid():
+    ...
+
+---
+
+请现在开始生成代码。
